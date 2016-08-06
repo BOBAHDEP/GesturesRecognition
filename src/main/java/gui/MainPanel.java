@@ -5,27 +5,44 @@ package gui;
  * Search for the faces
  * Display a circle around the faces using Java
  */
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import javax.swing.*;
+
 import org.opencv.core.Mat;
 
-class MainPanel extends JPanel{
+public class MainPanel extends JPanel {
+    public static final String WINDOW_NAME = "Capture - Face detection";
+
     private BufferedImage image;
 
-    public MainPanel(){
+    private JFrame frame;
+
+    public JFrame getFrame() {
+        return frame;
+    }
+
+    public MainPanel() {
         super();
+        frame = new JFrame(WINDOW_NAME);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(500, 500);
+
+        frame.setContentPane(this);
+        frame.setVisible(true);
     }
 
     /**
      * Shows image ???
-     * @param matBGR in=mg
+     *
+     * @param matBGR img
      * @return
      */
-    public boolean MatToBufferedImage(Mat matBGR){
+    public boolean MatToBufferedImage(Mat matBGR) {
         long startTime = System.nanoTime();
-        int width = matBGR.width(), height = matBGR.height(), channels = matBGR.channels() ;
+        int width = matBGR.width(), height = matBGR.height(), channels = matBGR.channels();
         byte[] sourcePixels = new byte[width * height * channels];
         matBGR.get(0, 0, sourcePixels);
         // create new image and get reference to backing data
@@ -33,12 +50,13 @@ class MainPanel extends JPanel{
         final byte[] targetPixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
         System.arraycopy(sourcePixels, 0, targetPixels, 0, sourcePixels.length);
         long endTime = System.nanoTime();
-        System.out.println(String.format("Elapsed time: %.2f ms", (float)(endTime - startTime)/1000000));
+        System.out.println(String.format("Elapsed time: %.2f ms", (float) (endTime - startTime) / 1000000));
         return true;
     }
-    public void paintComponent(Graphics g){
+
+    public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        if (this.image==null) return;
+        if (this.image == null) return;
         g.drawImage(this.image, 0, 0, this.image.getWidth(), this.image.getHeight(), null);
     }
 }

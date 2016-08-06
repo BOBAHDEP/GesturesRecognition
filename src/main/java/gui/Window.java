@@ -1,46 +1,74 @@
 package gui;
 
+import logic.DetectedFigure;
 import logic.Processor;
 import org.opencv.core.Core;
-import org.opencv.core.Mat;
-import org.opencv.videoio.VideoCapture;
 
-import javax.swing.JFrame;
+import javax.swing.*;
+import javax.swing.Timer;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.*;
 
 public class Window {
 
-    public static final String WINDOW_NAME = "Capture - Face detection";
+    public static final int AMOUNT_OF_SAVED_FIGURES = 6;
+    public static final int MAX_DISTANCE_BETWEEN_SAME_FIGURES = 10;
+    //keep last figures for detection
+    private Queue<DetectedFigure> detectedFigures = new LinkedList<>();
+    private Processor processor = new Processor();
 
-    public static void main(String[] args) throws IllegalAccessException {
+    static {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-        JFrame frame = new JFrame(WINDOW_NAME);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(500,500);
-        Processor processor = new Processor();
-        MainPanel mainPanel = new MainPanel();
-        frame.setContentPane(mainPanel);
-        frame.setVisible(true);
-        //Read the video stream
-        Mat webCamImage = new Mat();
-        VideoCapture capture = new VideoCapture(0);
-        if( capture.isOpened()) {
-            while(true) {   //TODO add timer?
-                capture.read(webCamImage);
-                if(!webCamImage.empty()) {
-                    frame.setSize(webCamImage.width(),webCamImage.height());
-                    //-- 3. Apply the classifier to the captured image
-                    webCamImage=processor.detect(webCamImage);
+    }
 
-                    //-- 4. Display the image
-                    mainPanel.MatToBufferedImage(webCamImage);
-                    mainPanel.repaint();
-                }
-                else {
-                    throw new IllegalAccessException("No captured frame");
+    public static void main(String[] args) throws IllegalAccessException, InterruptedException {
+        Window window = new Window();
+        window.action();
+    }
+
+    private void action() {
+        int detectedFigureNumber = 0;   //to save. Each AMOUNT_OF_SAVED_FIGURES is set to 0
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                MainPanel mainPanel = new MainPanel();
+                PictureFrame pictureFrame = new PictureFrame();
+                Timer timer = new Timer(1000, new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        try {
+                            detectedFigures.add(processor.processCam(mainPanel));
+                            if (detectedFigures.size() == AMOUNT_OF_SAVED_FIGURES+1) {
+                                detectedFigures.remove();
+                            }
+                            if (checkSavedFigures()) {
+                                pictureFrame.setOK();
+                            }
+                        } catch (IllegalAccessException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                });
+                timer.start();
+            }
+        });
+
+    }
+
+    private boolean checkSavedFigures() {
+        if (detectedFigures.size() != AMOUNT_OF_SAVED_FIGURES) {
+            System.out.println("qq " + detectedFigures.size());
+            return false;
+        }
+        List<DetectedFigure> tempDetectedFigures = new ArrayList(detectedFigures);
+        for (int i = 0; i < tempDetectedFigures.size(); i++) {
+            for (int j = i; j < tempDetectedFigures.size(); j++) {
+                if (tempDetectedFigures.get(i) == null || tempDetectedFigures.get(j) == null ||
+                        tempDetectedFigures.get(i).getDistance(tempDetectedFigures.get(j)) > MAX_DISTANCE_BETWEEN_SAME_FIGURES) {
+                    return false;
                 }
             }
-        } else {
-            throw new IllegalAccessException("Capture is not Loaded!");
         }
+        return true;
     }
 }
