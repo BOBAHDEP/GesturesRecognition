@@ -5,10 +5,19 @@ package logic;
  */
 public class DetectedFigure {
     //TODO add type (ENUM)
-    int x;
-    int y;
-    int width;
-    int height;
+    private int x;
+    private int y;
+    private int width;
+    private int height;
+    private String figureType;
+
+    public String getFigureType() {
+        return figureType;
+    }
+
+    public void setFigureType(String figureType) {
+        this.figureType = figureType;
+    }
 
     public int getX() {
         return x;
@@ -42,7 +51,23 @@ public class DetectedFigure {
         this.height = height;
     }
 
+    @Override
+    public String toString() {
+        return "DetectedFigure{" +
+                "x=" + x +
+                ", y=" + y +
+                ", width=" + width +
+                ", height=" + height +
+                ", figureType='" + figureType + '\'' +
+                '}';
+    }
+
     public double getDistance(DetectedFigure detectedFigure) {
         return Math.sqrt((x - detectedFigure.getX())*(x - detectedFigure.getX()) + (y - detectedFigure.getY())*(y - detectedFigure.getY()));
+    }
+
+    public double getSizeDifference(DetectedFigure detectedFigure) {
+        return Math.sqrt((height - detectedFigure.getHeight())*(height - detectedFigure.getHeight()) +
+                (width - detectedFigure.getWidth())*(width - detectedFigure.getWidth()));
     }
 }

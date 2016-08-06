@@ -13,7 +13,8 @@ import java.util.*;
 public class Window {
 
     public static final int AMOUNT_OF_SAVED_FIGURES = 6;
-    public static final int MAX_DISTANCE_BETWEEN_SAME_FIGURES = 10;
+    public static final int MAX_DISTANCE_BETWEEN_SAME_FIGURES = 50;
+    public static final int MAX_DISTANCE_BETWEEN_SIZES = 50;
     //keep last figures for detection
     private Queue<DetectedFigure> detectedFigures = new LinkedList<>();
     private Processor processor = new Processor();
@@ -27,6 +28,7 @@ public class Window {
         window.action();
     }
 
+    //TODO type difference, pictures, button actions
     private void action() {
         int detectedFigureNumber = 0;   //to save. Each AMOUNT_OF_SAVED_FIGURES is set to 0
         SwingUtilities.invokeLater(new Runnable() {
@@ -57,14 +59,15 @@ public class Window {
 
     private boolean checkSavedFigures() {
         if (detectedFigures.size() != AMOUNT_OF_SAVED_FIGURES) {
-            System.out.println("qq " + detectedFigures.size());
+//            System.out.println("detectedFigures.size =  " + detectedFigures.size());
             return false;
         }
         List<DetectedFigure> tempDetectedFigures = new ArrayList(detectedFigures);
         for (int i = 0; i < tempDetectedFigures.size(); i++) {
             for (int j = i; j < tempDetectedFigures.size(); j++) {
                 if (tempDetectedFigures.get(i) == null || tempDetectedFigures.get(j) == null ||
-                        tempDetectedFigures.get(i).getDistance(tempDetectedFigures.get(j)) > MAX_DISTANCE_BETWEEN_SAME_FIGURES) {
+                        tempDetectedFigures.get(i).getDistance(tempDetectedFigures.get(j)) > MAX_DISTANCE_BETWEEN_SAME_FIGURES ||
+                        tempDetectedFigures.get(i).getSizeDifference(tempDetectedFigures.get(j)) > MAX_DISTANCE_BETWEEN_SIZES) {
                     return false;
                 }
             }
