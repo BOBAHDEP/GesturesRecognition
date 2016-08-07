@@ -1,12 +1,12 @@
 package gui;
 
 /*
- * Captures the camera stream with OpenCV
- * Search for the faces
- * Display a circle around the faces using Java
+ * Panel window displaying video from camera & resolved figures
  */
 
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import javax.swing.*;
@@ -24,7 +24,7 @@ public class MainPanel extends JPanel {
         return frame;
     }
 
-    public MainPanel() {
+    public MainPanel(KeyAdapter keyAdapter) {
         super();
         frame = new JFrame(WINDOW_NAME);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -32,6 +32,7 @@ public class MainPanel extends JPanel {
 
         frame.setContentPane(this);
         frame.setVisible(true);
+        frame.addKeyListener(keyAdapter);
     }
 
     /**

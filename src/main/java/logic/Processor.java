@@ -43,6 +43,7 @@ public class Processor {
 
     /**
      * Detects object
+     *
      * @param inputFrame frame from video
      * @return ?
      */
@@ -57,7 +58,7 @@ public class Processor {
         inputFrame.copyTo(mRgba);
         inputFrame.copyTo(mGrey);
         Imgproc.cvtColor(mRgba, mGrey, Imgproc.COLOR_BGR2GRAY);
-        Imgproc.equalizeHist( mGrey, mGrey );
+        Imgproc.equalizeHist(mGrey, mGrey);
 
         // detect, save array of objects
         List<Rect> facesRect = new ArrayList<>();   //to save faces.toArray();
@@ -80,16 +81,19 @@ public class Processor {
                 j = i;
                 size = facesRect.get(i).height;
             }
-            Imgproc.rectangle(inputFrame, facesRect.get(i).br(), facesRect.get(i).tl(), new Scalar(255, 250 * 1, 255), 4, 8, 0);
-
+            //draw rectangle around figure
+            Imgproc.rectangle(inputFrame, facesRect.get(i).br(), facesRect.get(i).tl(), new Scalar(255, 250, 255), 4, 8, 0);
+            //display type
+            Imgproc.putText(inputFrame, typesOfFiguresDetected.get(j), facesRect.get(i).br(), Core.FONT_HERSHEY_COMPLEX, 1.0 , new  Scalar(255, 255, 255));
         }
-        Imgproc.rectangle(inputFrame, facesRect.get(j).br(), facesRect.get(j).tl(), new Scalar(255, 250 * 0, 255), 4, 8, 0);
+        //to draw rectangle of another color around chosen figure
+        Imgproc.rectangle(inputFrame, facesRect.get(j).br(), facesRect.get(j).tl(), new Scalar(255, 0, 255), 4, 8, 0);
         res.setHeight(facesRect.get(j).height);
         res.setWidth(facesRect.get(j).width);
         res.setX(facesRect.get(j).x);
         res.setY(facesRect.get(j).y);
         res.setFigureType(typesOfFiguresDetected.get(j));
-        System.out.println(res);
+//        System.out.println(res);
         return res;
     }
 
@@ -125,6 +129,11 @@ public class Processor {
         return res;
     }
 
+    /**
+     * Convert file path to file name
+     * @param fileName file path
+     * @return file name
+     */
     public String convertFileXMLNameToClassifierName(String fileName) {
 
 
