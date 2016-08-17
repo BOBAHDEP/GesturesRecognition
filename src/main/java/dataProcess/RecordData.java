@@ -3,7 +3,7 @@ package dataProcess;
 import logic.DetectedFigure;
 
 /**
- * Created by BOBAHDEP on 07.08.16.
+ * TO implement logic of data recording
  */
 public class RecordData {
     public void recordStart(String typeOfFigure) {

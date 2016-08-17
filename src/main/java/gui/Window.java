@@ -3,7 +3,7 @@ package gui;
 import dataProcess.RecordData;
 import logic.DetectedFigure;
 import logic.Processor;
-import org.opencv.core.Core;
+import properties.Property;
 
 import javax.swing.*;
 import javax.swing.Timer;
@@ -15,16 +15,16 @@ import java.util.*;
 
 public class Window {
 
-    public static final int AMOUNT_OF_SAVED_FIGURES = 6;
-    public static final int MAX_DISTANCE_BETWEEN_SAME_FIGURES = 60;
-    public static final int MAX_DISTANCE_BETWEEN_SIZES = 60;
+    public static final int AMOUNT_OF_SAVED_FIGURES = Property.getAmountOfSavedFigures();
+    public static final int MAX_DISTANCE_BETWEEN_SAME_FIGURES = Property.getMaxDistanceBetweenSameFigures();
+    public static final int MAX_DISTANCE_BETWEEN_SIZES = Property.getMaxDistanceBetweenSizes();
     public static final String OK_STATE_NAME = "OK";
     public static final String DEFAULT_STATE_NAME = "Default";
     public static final String FIST_LETTER = "F";
     public static final String FIST_NAME = "fist";
     public static final String PALM_NAME = "palm";
     public static final String PALM_LETTER = "P";
-    public static final int TIMER_DELAY = 1000;
+    public static final int SPACE_SYMBOL_CODE = 32;
 
     //keep last figures for detection
     private Queue<DetectedFigure> detectedFigures = new LinkedList<>();
@@ -41,7 +41,7 @@ public class Window {
     String state = null;
 
     static {
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+        System.load(Property.getLibPath());
     }
 
     public static void main(String[] args) throws IllegalAccessException, InterruptedException {
@@ -67,7 +67,7 @@ public class Window {
 
                 setDefaultState();
 
-                Timer timer = new Timer(TIMER_DELAY, new ActionListener() {
+                Timer timer = new Timer(Property.getFrameRate(), new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         try {
@@ -119,7 +119,7 @@ public class Window {
      * @param e key event
      */
     private void processKeyEvent(KeyEvent e) {
-        if (e.getKeyCode() == 32) {
+        if (e.getKeyCode() == SPACE_SYMBOL_CODE) {
             setDefaultState();
         }
         switch (KeyEvent.getKeyText(e.getKeyCode())) {

@@ -14,7 +14,7 @@ import javax.swing.*;
 import org.opencv.core.Mat;
 
 public class MainPanel extends JPanel {
-    public static final String WINDOW_NAME = "Capture - Face detection";
+    public static final String WINDOW_NAME = "Capture - Gesture detection";
 
     private BufferedImage image;
 
