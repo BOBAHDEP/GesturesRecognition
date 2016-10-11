@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
  *  Class for image recognition
  */
 public class Processor {
-    public static final int CAM_NUMBER = 0;
+    public static final int CAM_NUMBER = 1;
 
     //cascade contains info about object to be recognized
     public static final String CASCADE_FIST_FILENAME = "classifiers/fist.xml";                  //need to copy to add cascade
