@@ -5,6 +5,7 @@ import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
 import org.opencv.videoio.VideoCapture;
+import properties.Property;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,9 +20,15 @@ public class Processor {
     public static final int CAM_NUMBER = 0;
 
     //cascade contains info about object to be recognized
-    public static final String CASCADE_FIST_FILENAME = "classifiers/palm.xml";              //need to copy to add cascade
+    public static final String CASCADE_FIST_FILENAME = "classifiers/fist.xml";                  //need to copy to add cascade
 
-    public static final String CASCADE_PALM_FILENAME = "classifiers/fist.xml";
+    public static final String CASCADE_PALM_FILENAME = "classifiers/palm.xml";
+
+    public String cascadeCheat = null;
+
+    public static final String CASCADE_OK_FILENAME = "classifiers/ok_.xml";
+
+    public static final List<String> CASCADE_FILENAMES = new ArrayList<>();
 
     private List<CascadeContainer> cascadeContainers = new ArrayList<>();
 
@@ -29,16 +36,18 @@ public class Processor {
     private VideoCapture capture = new VideoCapture(CAM_NUMBER);
 
     public Processor(){
-        CascadeClassifier fistCascade = new CascadeClassifier(CASCADE_FIST_FILENAME);       //need to copy to add cascade
-        if(fistCascade.empty()) {                                                           //need to copy to add cascade
-            throw new IllegalArgumentException("cascade is empty!!");                       //need to copy to add cascade
-        }                                                                                   //need to copy to add cascade
-        CascadeClassifier palmCascade = new CascadeClassifier(CASCADE_PALM_FILENAME);
-        if(palmCascade.empty()) {
-            throw new IllegalArgumentException("cascade is empty!!");
+
+        CASCADE_FILENAMES.add(CASCADE_FIST_FILENAME);
+        CASCADE_FILENAMES.add(CASCADE_PALM_FILENAME);                                           //need to copy to add cascade
+        CASCADE_FILENAMES.add(CASCADE_OK_FILENAME);
+
+        for (String cascadeName: CASCADE_FILENAMES) {
+            CascadeClassifier cascadeClassifier = new CascadeClassifier(cascadeName);
+            if(cascadeClassifier.empty()) {
+                throw new IllegalArgumentException("cascade is empty!!");
+            }
+            cascadeContainers.add(new CascadeContainer(cascadeClassifier, cascadeName));
         }
-        cascadeContainers.add(new CascadeContainer(fistCascade, CASCADE_FIST_FILENAME));    //need to copy to add cascade
-        cascadeContainers.add(new CascadeContainer(palmCascade, CASCADE_PALM_FILENAME));
     }
 
     /**
@@ -57,18 +66,56 @@ public class Processor {
         MatOfRect faces = new MatOfRect();
         inputFrame.copyTo(mRgba);
         inputFrame.copyTo(mGrey);
-        Imgproc.cvtColor(mRgba, mGrey, Imgproc.COLOR_BGR2GRAY);
-        Imgproc.equalizeHist(mGrey, mGrey);
+//        Imgproc.cvtColor(mRgba, mGrey, Imgproc.COLOR_BGR2GRAY);
+//        Imgproc.equalizeHist(mGrey, mGrey);
+//        Imgproc.cvtColor(mGrey, mGrey, Imgproc.COLOR_GRAY2BGR);
+
+        Imgproc.cvtColor(mGrey, mGrey, Imgproc.COLOR_BGR2HSV);
+
+        //filter skin
+        byte[] zeros = {1,1,1};
+        for(int r=0; r<mGrey.rows(); ++r) {
+            for (int c = 0; c < mGrey.cols(); ++c) {
+                // 0<H<0.25  -   0.15<S<0.9    -    0.2<V<0.95
+//                if( (mGrey.get(r,c)[0]>0) && (mGrey.get(r,c)[0] < 255) && (mGrey.get(r,c)[1]>38) && (mGrey.get(r,c)[1]<255) /*&& (mGrey.get(r,c)[2]>51) && (mGrey.get(r,c)[2]<242) */); // do nothing
+//                else for(int i=0; i<3; ++i)	mGrey.put(r,c, zeros);
+            }
+        }
+        Imgproc.cvtColor(mGrey, mGrey, Imgproc.COLOR_HSV2BGR);
+//        Imgproc.cvtColor(mGrey, mGrey, Imgproc.COLOR_BGR2GRAY);
+//        Imgproc.threshold(mGrey, mGrey, 60, 255, Imgproc.THRESH_BINARY);
+//        Imgproc.morphologyEx(mGrey, mGrey, Imgproc.MORPH_ERODE, new Mat(3,3,1), new Point(-1, -1), 3);
+//        Imgproc.morphologyEx(mGrey, mGrey, Imgproc.MORPH_OPEN, new Mat(7,7,1), new Point(-1, -1), 1);
+//        Imgproc.morphologyEx(mGrey, mGrey, Imgproc.MORPH_CLOSE, new Mat(9,9,1), new Point(-1, -1), 1);
+
+        mGrey.copyTo(inputFrame);
+
+
 
         // detect, save array of objects
         List<Rect> facesRect = new ArrayList<>();   //to save faces.toArray();
         List<String> typesOfFiguresDetected = new ArrayList<>();
         for (CascadeContainer cascadeContainer: cascadeContainers) {
-            cascadeContainer.getCascadeClassifier().detectMultiScale(mGrey, faces);
-            for (Rect rect: faces.toArray()) {
-                facesRect.add(rect);
-                typesOfFiguresDetected.add(convertFileXMLNameToClassifierName(cascadeContainer.getXmlFileName()));
+            if (cascadeCheat == null /*&& (convertFileXMLNameToClassifierName(cascadeContainer.getXmlFileName()).equals("fist")
+            || convertFileXMLNameToClassifierName(cascadeContainer.getXmlFileName()).equals("palm"))*/
+                || convertFileXMLNameToClassifierName(cascadeContainer.getXmlFileName()).equals(cascadeCheat)) {
+                cascadeContainer.getCascadeClassifier().detectMultiScale(mGrey, faces);
+                for (Rect rect : faces.toArray()) {
+                    if (rect.height > Property.getHeight())
+                        facesRect.add(rect);
+                    typesOfFiguresDetected.add(convertFileXMLNameToClassifierName(cascadeContainer.getXmlFileName()));
+                }
             }
+//            if (cascadeCheat != null && (convertFileXMLNameToClassifierName(cascadeContainer.getXmlFileName()).equals("fist") ||
+//                    convertFileXMLNameToClassifierName(cascadeContainer.getXmlFileName()).equals("palm")) &&
+//                    cascadeCheat.equals("1")) {
+//                cascadeContainer.getCascadeClassifier().detectMultiScale(mGrey, faces);
+//                for (Rect rect : faces.toArray()) {
+//                    if (rect.height > Property.getHeight())
+//                        facesRect.add(rect);
+//                    typesOfFiguresDetected.add(convertFileXMLNameToClassifierName(cascadeContainer.getXmlFileName()));
+//                }
+//            }
         }
 
         if (facesRect.size() == 0) {
@@ -82,20 +129,26 @@ public class Processor {
                 size = facesRect.get(i).height;
             }
             //draw rectangle around figure
-            Imgproc.rectangle(inputFrame, facesRect.get(i).br(), facesRect.get(i).tl(), new Scalar(255, 250, 255), 4, 8, 0);
+//            Imgproc.rectangle(inputFrame, facesRect.get(i).br(), facesRect.get(i).tl(), new Scalar(255, 250, 255), 4, 8, 0);
             //display type
-            Imgproc.putText(inputFrame, typesOfFiguresDetected.get(j), facesRect.get(i).br(), Core.FONT_HERSHEY_COMPLEX, 1.0 , new  Scalar(255, 255, 255));
+//            Imgproc.putText(inputFrame, typesOfFiguresDetected.get(i), facesRect.get(i).br(), Core.FONT_HERSHEY_COMPLEX, 1.0 , new  Scalar(255, 255, 255));
         }
         //to draw rectangle of another color around chosen figure
         Imgproc.rectangle(inputFrame, facesRect.get(j).br(), facesRect.get(j).tl(), new Scalar(255, 0, 255), 4, 8, 0);
+        Imgproc.putText(inputFrame, typesOfFiguresDetected.get(j), facesRect.get(j).br(), Core.FONT_HERSHEY_COMPLEX, 1.0 , new  Scalar(255, 255, 255));
+
         res.setHeight(facesRect.get(j).height);
         res.setWidth(facesRect.get(j).width);
         res.setX(facesRect.get(j).x);
         res.setY(facesRect.get(j).y);
         res.setFigureType(typesOfFiguresDetected.get(j));
-//        System.out.println(res);
+        System.out.println(res);
         return res;
     }
+
+//    private Mat drawVideoInStyle(Mat inputFrame) {
+//
+//    }
 
     /**
      * main process of interaction with camera
@@ -109,24 +162,33 @@ public class Processor {
         DetectedFigure res;
 
         //Read the video stream
-        if (capture.isOpened()) {
+        try {
+            if (capture.isOpened()) {
                 capture.read(webCamImage);
                 if (!webCamImage.empty()) {
-                    mainPanel.getFrame().setSize(webCamImage.width(), webCamImage.height());
+                    if (mainPanel != null) {
+                        mainPanel.getFrame().setSize(mainPanel.getWidth(), webCamImage.height() + 50);
+                    }
                     //-- 3. Apply the classifier to the captured image
                     res = detect(webCamImage);
 
                     //-- 4. Display the image
-                    mainPanel.MatToBufferedImage(webCamImage);
-                    mainPanel.repaint();
+                    if (mainPanel != null) {
+                        mainPanel.MatToBufferedImage(webCamImage);
+                        mainPanel.repaint();
+                    }
                 } else {
                     throw new IllegalAccessException("No captured frame");
                 }
 
-        } else {
-            throw new IllegalAccessException("Capture is not Loaded!");
+            } else {
+                throw new IllegalAccessException("Capture is not Loaded!");
+            }
+            return res;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return res;
+        return null;
     }
 
     /**

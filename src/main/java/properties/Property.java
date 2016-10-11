@@ -54,4 +54,18 @@ public class Property {
         }
         return Integer.parseInt(properties.getProperty("maxDistanceBetweenSizes"));
     }
+
+    public static boolean isCyclic() {
+        if (properties == null) {
+            throw new IllegalArgumentException("config.properties was not found");
+        }
+        return properties.getProperty("isCycle").equals("1");
+    }
+
+    public static int getHeight() {
+        if (properties == null) {
+            throw new IllegalArgumentException("config.properties was not found");
+        }
+        return Integer.parseInt(properties.getProperty("minHeigth"));
+    }
 }

@@ -33,8 +33,20 @@ public class PictureFrame extends JFrame {
         pictureDisplayed.setIcon(imageIconOK);
     }
 
-    public void setDefault() {
-        pictureDisplayed.setText("GET READY!");
+    public void setDefault(boolean isCycle) {
+        if (!isCycle) {
+            pictureDisplayed.setText("GET READY!");
+            pictureDisplayed.setFont(new Font("Serif", Font.PLAIN, 50));
+            pictureDisplayed.setIcon(null);
+        } else {
+            pictureDisplayed.setText("GET READY!");
+            pictureDisplayed.setFont(new Font("Serif", Font.PLAIN, 50));
+            pictureDisplayed.setIcon(null);
+        }
+    }
+
+    public void setText(long time) {
+        pictureDisplayed.setText(String.valueOf(time));
         pictureDisplayed.setFont(new Font("Serif", Font.PLAIN, 50));
         pictureDisplayed.setIcon(null);
     }
